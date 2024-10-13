@@ -13,7 +13,7 @@ router = APIRouter(
 @router.get("/", response_model=List[schemas.PostOut])
 async def get_posts(db: Session = Depends(get_db), 
                     current_user: int = Depends(oauth2.get_current_user), 
-                    limit:int = 1, skip: int = 0, 
+                    limit:int = 10, skip: int = 0, 
                     search: Optional[str] = ''):
 
     result = db.query(models.Post, func.count(models.Vote.post_id).label('votes')).join(
@@ -65,7 +65,7 @@ async def delete_post(id: int, db: Session = Depends(get_db), current_user: int 
         raise HTTPException(detail="post does not exits", status_code=status.HTTP_404_NOT_FOUND)
     
     if post.owner_id != current_user.id:
-        raise HTTPException(detail="post does not exits you cretaed", status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(detail="post does not exits you cretaed", status_code=status.HTTP_403_FORBIDDEN)
     
     post_quary.delete(synchronize_session=False)
     db.commit()
@@ -73,18 +73,29 @@ async def delete_post(id: int, db: Session = Depends(get_db), current_user: int 
 
 
 @router.put("/{id}", response_model=schemas.Post)
-async def put_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    # cursor.execute("""UPDATE posts SET title = %s, content = %s, published=%s WHERE id = %s RETURNING *""", 
+def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+
+    # cursor.execute("""UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *""",
     #                (post.title, post.content, post.published, str(id)))
+
     # updated_post = cursor.fetchone()
     # conn.commit()
-    post_quary = db.query(models.Post).filter(models.Post.id == id)
-    post_obj = post_quary.first()
-    if post_obj is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="post does not exits")
-    if post_obj.owner_id != current_user.id:
-        raise HTTPException(detail="post does not exits you cretaed", status_code=status.HTTP_404_NOT_FOUND)
-    post_quary.update(post.dict(), synchronize_session=False)
+
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+
+    post = post_query.first()
+
+    if post == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"post with id: {id} does not exist")
+
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action")
+
+    post_query.update(updated_post.dict(), synchronize_session=False)
+
     db.commit()
-    return post_quary.first()
+
+    return post_query.first()
 

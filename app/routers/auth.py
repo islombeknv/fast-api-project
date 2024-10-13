@@ -4,7 +4,6 @@ from app.database import get_db
 from app import models, schemas, utils, oauth2
 
 router = APIRouter(
-    prefix='/auth',
     tags=['Authentication']
 )
 
@@ -13,7 +12,7 @@ router = APIRouter(
 async def login(user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == user_credentials.email).first()
     if not user:   
-        raise HTTPException(detail="invalid credentials", status_code=status.HTTP_403_FORBIDDEN_)
+        raise HTTPException(detail="invalid credentials", status_code=status.HTTP_403_FORBIDDEN)
     
     if not utils.verify(user_credentials.password, user.password):   
         raise HTTPException(detail="invalid credentials", status_code=status.HTTP_403_FORBIDDEN)

@@ -20,8 +20,8 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: ${{ secrets.DATABASE_NAME || 'fastapi' }}
+          POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD || 'postgres' }}
+          POSTGRES_DB: ${{ secrets.DATABASE_NAME || 'fastapi' }}_test
         ports:
           - 5432:5432
         options: >-

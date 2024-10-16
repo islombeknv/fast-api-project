@@ -7,21 +7,21 @@ jobs:
     environment:
       name: testing
     env:
-      DATABASE_HOSTNAME: ${{ secrets.DATABASE_HOSTNAME || 'localhost' }}
-      DATABASE_PORT: ${{ secrets.DATABASE_PORT || '5432' }}
-      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD || 'postgres' }}
-      DATABASE_NAME: ${{ secrets.DATABASE_NAME || 'fastapi' }}
-      DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME || 'postgres' }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY || 'defaultsecretkey' }}
-      ALGORITHM: ${{ secrets.ALGORITHM || 'HS256' }}
-      ACCESS_TOKEN_EXPIRE_MINUTS: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTS || 30 }}
+      DATABASE_HOSTNAME: ${{ secrets.DATABASE_HOSTNAME }}
+      DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+      DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+      ACCESS_TOKEN_EXPIRE_MINUTS: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTS }}
 
     services:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD || 'postgres' }}
-          POSTGRES_DB: ${{ secrets.DATABASE_NAME || 'fastapi' }}_test
+          POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DATABASE_NAME }}_test
         ports:
           - 5432:5432
         options: >-
@@ -34,16 +34,6 @@ jobs:
     steps:
       - name: pulling git repo
         uses: actions/checkout@v2
-      - name: Create .env file
-        run: |
-          echo "DATABASE_HOSTNAME=${{ secrets.DATABASE_HOSTNAME || 'localhost' }}" >> .env
-          echo "DATABASE_PORT=${{ secrets.DATABASE_PORT || '5432' }}" >> .env
-          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD || 'postgres' }}" >> .env
-          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME || 'fastapi' }}" >> .env
-          echo "DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME || 'postgres' }}" >> .env
-          echo "SECRET_KEY=${{ secrets.SECRET_KEY || 'defaultsecretkey' }}" >> .env
-          echo "ALGORITHM=${{ secrets.ALGORITHM || 'HS256' }}" >> .env
-          echo "ACCESS_TOKEN_EXPIRE_MINUTS=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTS || 30 }}" >> .env
 
       - name: Install python version 3.11.2
         uses: actions/setup-python@v2
@@ -77,7 +67,7 @@ jobs:
           file: ./Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/fastapi:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
       - name: Image digest
